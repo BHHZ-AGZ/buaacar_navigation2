@@ -315,7 +315,21 @@ void HttpServer::processRequest(
             "/buaacar/imu",
             "/buaacar/pointcloud",
             "/buaacar/string",
-            "/command"
+            "/command",
+            "/task_queue/identify_obstacles",
+            "/real_time_data/robot_hardware_status",
+            "/real_time_data/robot_pos",
+            "/real_time_data/temp_point_init_pose",
+            "/real_time_data/robot_local_status",
+            "/real_time_data/map",
+            "/task_queue/one_point",
+            "/real_time_data/local_grid_plan_path",
+            "/real_time_data/two_point_plan_path",
+            "/task_queue/start",
+            "/task_queue/stop",
+            "/task_queue/task/is_finished",
+            "/task_queue/pause",
+            "/task_queue/resume"
         };
 
         // 检查当前请求是否需要验证Token
