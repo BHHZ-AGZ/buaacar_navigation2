@@ -1,0 +1,83 @@
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchDescription
+from launch_ros.actions import Node
+from launch.substitutions import Command, PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch_ros.descriptions import ParameterValue
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+def generate_launch_description():
+    model_arg = DeclareLaunchArgument(
+        'model',
+        default_value='',
+        description='Path to the URDF model file'
+    )
+
+    urdf_path = PathJoinSubstitution(
+        [FindPackageShare('buaahz_car_urdf'), 'urdf', 'buaahz_car_urdf.urdf']
+    )
+    unilidar_launch_path = "/home/test/robot_ws/src/unitree_lidar_ros2/src/unitree_lidar_ros2/launch/launch.py"
+    cloud_to_scan_launch_path = "/home/test/robot_ws/src/cloud_to_scan/launch/launch/cloud_to_scan_launch.py"
+    rf2o_laser_launch_path = "/home/test/robot_ws/src/rf2o_laser_odometry/launch/rf2o_laser_odometry.launch.py"
+    robot_localization_launch_path = "/home/test/robot_ws/src/robot_localization/launch/ekf.launch.py"
+    fdilink_ahrs_launch_path = '/home/test/robot_ws/src/fdilink_ahrs/launch/ahrs_driver.launch.py'
+    robot_description_content = Command(['xacro ', urdf_path])
+    robot_description = ParameterValue(robot_description_content, value_type=str)
+
+
+    joint_state_publisher_gui_node = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
+        name='joint_state_publisher_gui',
+        condition=IfCondition('true')
+    )
+
+    robot_state_publisher_node = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='both',
+        parameters=[{'robot_description': robot_description}]
+    )
+
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare('buaahz_car_urdf'), 'urdf.rviz']
+    )
+
+    rviz_node = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='log',
+        arguments=['-d', rviz_config_file]
+    )
+    laser_scan_matcher_node = Node(
+        package='ros2_laser_scan_matcher',
+        executable='laser_scan_matcher',
+        name='ros2_laser_scan_matcher_node',
+        output='screen',
+    )
+    uart_serial_comm_node = Node(
+        package= 'uart_serial_comm',
+        executable= 'uart_serial_comm',
+        name= 'uart_serial_comm_node',
+        output= 'screen',
+    )
+    unilidar_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(unilidar_launch_path))
+    cloud_to_scan_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(cloud_to_scan_launch_path))
+    rf2o_laser_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(rf2o_laser_launch_path))
+    robot_localization_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(robot_localization_launch_path))
+    fdilink_ahrs_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(fdilink_ahrs_launch_path))
+    return LaunchDescription([
+        model_arg,
+        joint_state_publisher_gui_node,
+        robot_state_publisher_node,
+        uart_serial_comm_node,
+        fdilink_ahrs_launch,
+        unilidar_launch,
+        cloud_to_scan_launch,
+        rf2o_laser_launch,
+        robot_localization_launch
+        # rviz_node
+    ])

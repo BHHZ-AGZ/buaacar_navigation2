@@ -1,0 +1,9 @@
+{
+  "jwt_secret": "akczxhv32@mnbibibczkcdsufaif8s72",
+  "http_server_port": 8083,
+  "token_expire_hours": 24,
+  "allowed_origins": ["*"],
+  "users": [
+    {"usercode": "buaacar", "password": "buaacar@2025"}
+  ]
+}

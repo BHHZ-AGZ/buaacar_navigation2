@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>北航杭研院 底盘数据</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .panel { background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+        .topic-data { white-space: pre-wrap; font-family: monospace; background: white; padding: 10px; }
+        .topic-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        button { padding: 5px 10px; cursor: pointer; }
+        .add-topic { margin: 20px 0; }
+        #loginForm { margin: 20px 0; } /* 调整登录表单样式 */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>北航杭研院 底盘数据</h1>
+        
+        <!-- 保留一个登录表单，避免冲突 -->
+        <form id="loginForm" method="POST" onsubmit="login(); return false;">
+            <input type="text" id="username" placeholder="用户名" required>
+            <input type="password" id="password" placeholder="密码" required>
+            <button type="submit">登录</button>
+        </form>
+
+        <!-- <div class="add-topic panel">
+            <h3>接收新的话题数据</h3>
+            <input type="text" id="new-topic" placeholder="请输入话题名称 (例如： /scan)">
+            <button onclick="subscribeTopic()">接收</button>
+        </div> -->
+        
+        <div id="topics-container" style="display: none;">  <!-- 初始隐藏数据面板 -->
+            <div class="panel">
+                <h3>IMU 数据</h3>
+                <div id="imu-data">加载中...</div>
+            </div>
+            <div class="panel">
+                <h3>点云数据</h3>
+                <div id="pointcloud-data">加载中...</div>
+            </div>
+            <div class="panel">
+                <h3>底盘状态数据</h3>
+                <div id="string-data">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 1. 先定义API_BASE，确保login()中可访问
+    const API_BASE = "http://172.20.47.87:8083";
+
+    // 2. 登录函数
+    async function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const url = `${API_BASE}/buaacar/login`;  // 正确路径（无api前缀）
+        
+        console.log('登录请求:', { url, method: 'POST', usercode: username });
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usercode: username, password })
+            });
+            
+            const data = await response.json();
+            console.log('登录响应:', data);
+            
+            if (response.ok && data.status === 'success') {
+                localStorage.setItem('token', data.token);
+                // 隐藏登录表单，显示数据面板
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('topics-container').style.display = 'block';
+                // 调用正确的数据加载函数
+                updateAllData();
+            } else {
+                alert('登录失败: ' + (data.error || '未知错误'));
+            }
+        } catch (error) {
+            console.error('登录错误:', error);
+            alert('网络错误，请重试');
+        }
+    }
+
+    // 3. 数据更新函数（修正接口路径）
+    async function updateAllData() {
+        try {
+            const token = localStorage.getItem('token');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            // 修正路径：移除api前缀，与后端一致
+            const imuResponse = await fetch(`${API_BASE}/buaacar/imu`, { headers });
+            if (!imuResponse.ok) throw new Error(`IMU请求错误: ${imuResponse.status}`);
+            const imuData = await imuResponse.json();
+
+            const pointcloudResponse = await fetch(`${API_BASE}/buaacar/pointcloud`, { headers });
+            if (!pointcloudResponse.ok) throw new Error(`点云请求错误: ${pointcloudResponse.status}`);
+            const pointcloudData = await pointcloudResponse.json();
+
+            const stringResponse = await fetch(`${API_BASE}/buaacar/string`, { headers });
+            if (!stringResponse.ok) throw new Error(`状态数据请求错误: ${stringResponse.status}`);
+            const stringData = await stringResponse.text();
+
+            // 更新UI
+            document.getElementById('imu-data').innerText = 
+                `Frame: ${imuData.header?.frame_id || '未知'}\n` +
+                `Timestamp: ${new Date(imuData.timestamp * 1000).toLocaleString() || '未知'}\n` +
+                `Orientation: (\n` +
+                    `  x: ${(imuData.orientation?.x || 0).toFixed(3)},\n` +
+                    `  y: ${(imuData.orientation?.y || 0).toFixed(3)},\n` +
+                    `  z: ${(imuData.orientation?.z || 0).toFixed(3)},\n` +
+                    `  w: ${(imuData.orientation?.w || 0).toFixed(3)}\n` +
+                    `)\n` +
+                    `Angular Velocity: (\n` +
+                    `  x: ${(imuData.angular_velocity?.x || 0).toFixed(3)},\n` +
+                    `  y: ${(imuData.angular_velocity?.y || 0).toFixed(3)},\n` +
+                    `  z: ${(imuData.angular_velocity?.z || 0).toFixed(3)}\n` +
+                    `)\n` +
+                    `Linear Acceleration: (\n` +
+                    `  x: ${(imuData.linear_acceleration?.x || 0).toFixed(3)},\n` +
+                    `  y: ${(imuData.linear_acceleration?.y || 0).toFixed(3)},\n` +
+                    `  z: ${(imuData.linear_acceleration?.z || 0).toFixed(3)}\n` +
+                    `)`;
+
+            document.getElementById('pointcloud-data').innerText = 
+                `Frame: ${pointcloudData.header?.frame_id || '未知'}\n` +
+                `Size: ${pointcloudData.width || 0} x ${pointcloudData.height || 0} points\n` +
+                `Data size: ${(pointcloudData.data_size || 0 / 1024).toFixed(1)} KB`;
+
+            document.getElementById('string-data').innerText = stringData || "底盘状态数据为空";
+
+        } catch (error) {
+            console.error('数据更新失败:', error);
+            if (error.message.includes('401')) {
+                localStorage.removeItem('token');
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('topics-container').style.display = 'none';
+                alert('登录已过期，请重新登录');
+                return;
+            }
+            document.getElementById('imu-data').innerText = `IMU加载失败: ${error.message}`;
+            document.getElementById('pointcloud-data').innerText = `点云加载失败: ${error.message}`;
+            document.getElementById('string-data').innerText = `状态数据加载失败: ${error.message}`;
+        }
+        setTimeout(updateAllData, 500);  // 继续定时更新
+    }
+
+    // 4. 实现subscribeTopic()函数（避免点击错误）
+    function subscribeTopic() {
+        const topic = document.getElementById('new-topic').value.trim();
+        if (!topic) {
+            alert('请输入话题名称');
+            return;
+        }
+        // 这里可以添加订阅逻辑（如向后端发送订阅请求）
+        alert(`已订阅话题: ${topic}（功能待实现）`);
+    }
+    </script>
+</body>
+</html>

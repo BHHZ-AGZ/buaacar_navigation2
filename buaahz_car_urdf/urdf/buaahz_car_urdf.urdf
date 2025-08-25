@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="buaahz_car_urdf">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.181620945341278 -0.000387792548715432 0.224946568991621"
+        rpy="0 0 0" />
+      <mass
+        value="13.4603785011097" />
+      <inertia
+        ixx="0.281665901490638"
+        ixy="0.000125873679854774"
+        ixz="0.00137365615806707"
+        iyy="0.275113775796739"
+        iyz="-1.92758322675842E-05"
+        izz="0.187965683251819" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.776470588235294 0.756862745098039 0.737254901960784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="left_wheel_Link">
+    <inertial>
+      <origin
+        xyz="5.65098762783656E-08 -0.000107541598391658 3.10675519173045E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.913957958882337" />
+      <inertia
+        ixx="0.00156554399137761"
+        ixy="-7.84052736781167E-10"
+        ixz="2.68393645781537E-09"
+        iyy="0.00295301334108984"
+        iyz="-2.21425364152505E-09"
+        izz="0.00156556205111389" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/left_wheel_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/left_wheel_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="5E-05 0.2146 -0.002"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="left_wheel_Link" />
+    <axis
+      xyz="0.00023299 1 0" />
+  </joint>
+  <link
+    name="right_wheel_Link">
+    <inertial>
+      <origin
+        xyz="-5.65098763338767E-08 0.000107541598391651 3.10675519181285E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.913957958882337" />
+      <inertia
+        ixx="0.00156554399137761"
+        ixy="-7.84052736810574E-10"
+        ixz="-2.68393645810792E-09"
+        iyy="0.00295301334108984"
+        iyz="2.21425364140035E-09"
+        izz="0.00156556205111389" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/right_wheel_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/right_wheel_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-5E-05 -0.2146 -0.002"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="right_wheel_Link" />
+    <axis
+      xyz="0.00023299 1 0" />
+  </joint>
+  <link
+    name="lf_Link">
+    <inertial>
+      <origin
+        xyz="0.00478439486534087 -0.000194940503855379 -0.0200897415759267"
+        rpy="0 0 0" />
+      <mass
+        value="0.0764331852561443" />
+      <inertia
+        ixx="6.38707770236009E-05"
+        ixy="2.87122519156648E-07"
+        ixz="1.04097740579094E-05"
+        iyy="5.80010180912249E-05"
+        iyz="-5.27406370320012E-07"
+        izz="5.40103969527263E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/lf_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.756862745098039 0.768627450980392 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/lf_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="lf_joint"
+    type="continuous">
+    <origin
+      xyz="0.3818 0.17675 0.0052475"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="lf_Link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="lf_wheel_Link">
+    <inertial>
+      <origin
+        xyz="-2.38627238802191E-07 -1.45803757956031E-10 -5.824273784788E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.150467637750351" />
+      <inertia
+        ixx="7.04259874807444E-05"
+        ixy="2.55314558577781E-13"
+        ixz="-6.751887300569E-12"
+        iyy="0.000108333870406122"
+        iyz="2.62322526670308E-10"
+        izz="7.04301499801696E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/lf_wheel_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.756862745098039 0.768627450980392 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/lf_wheel_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="lf_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.024001 0 -0.055747"
+      rpy="0 0 0" />
+    <parent
+      link="lf_Link" />
+    <child
+      link="lf_wheel_Link" />
+    <axis
+      xyz="0 1 0" />
+  </joint>
+  <link
+    name="rf_Link">
+    <inertial>
+      <origin
+        xyz="-0.00478439486534091 0.000194940503855441 -0.0200897415759267"
+        rpy="0 0 0" />
+      <mass
+        value="0.0764331852561442" />
+      <inertia
+        ixx="6.38707770236007E-05"
+        ixy="2.8712251915662E-07"
+        ixz="-1.04097740579094E-05"
+        iyy="5.80010180912247E-05"
+        iyz="5.27406370320083E-07"
+        izz="5.40103969527261E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/rf_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.756862745098039 0.768627450980392 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/rf_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rf_joint"
+    type="continuous">
+    <origin
+      xyz="0.3818 -0.17625 0.0052475"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="rf_Link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="rf_wheel_Link">
+    <inertial>
+      <origin
+        xyz="2.38627238857703E-07 1.45803898468633E-10 -5.82427378409411E-08"
+        rpy="0 0 0" />
+      <mass
+        value="0.150467637750353" />
+      <inertia
+        ixx="7.04259874807456E-05"
+        ixy="2.55314513031863E-13"
+        ixz="6.75188738021183E-12"
+        iyy="0.000108333870406124"
+        iyz="-2.62322526655321E-10"
+        izz="7.04301499801709E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/rf_wheel_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.756862745098039 0.768627450980392 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/rf_wheel_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rf_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.024001 0 -0.055747"
+      rpy="0 0 0" />
+    <parent
+      link="rf_Link" />
+    <child
+      link="rf_wheel_Link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="lidar_link">
+    <inertial>
+      <origin
+        xyz="-0.000409475881429561 0.000975763887258285 0.0302703281602912"
+        rpy="0 0 0" />
+      <mass
+        value="0.115202482029043" />
+      <inertia
+        ixx="3.91075544471334E-05"
+        ixy="-5.7106749869388E-06"
+        ixz="-3.51166014788045E-07"
+        iyy="4.77952921777355E-05"
+        iyz="5.69518868475363E-07"
+        izz="6.97266539913425E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/laser_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/laser_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="laser_joint"
+    type="continuous">
+    <origin
+      xyz="0.27385 -0.0022666 1.5137"
+      rpy="2.1757 4.220048 1.026" />
+    <parent
+      link="base_link" />
+    <child
+      link="lidar_link" />
+    <axis
+      xyz="0.015498 -0.03127 -0.99939" />
+  </joint>
+  <link
+    name="gyro_link">
+    <inertial>
+      <origin
+        xyz="-0.000461131492249564 1.4976717060966E-08 0.00035793140236913"
+        rpy="0 0 0" />
+      <mass
+        value="0.0548244190262661" />
+      <inertia
+        ixx="1.0090549858139E-05"
+        ixy="7.8187514451956E-12"
+        ixz="8.08032197163182E-09"
+        iyy="1.47422266994547E-05"
+        iyz="1.26941468197843E-12"
+        izz="2.14471397750013E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/gyro_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf/meshes/gyro_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="gyro_joint"
+    type="fixed">
+    <origin
+      xyz="0.3895 0 0.1035"
+      rpy="-3.1416 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="gyro_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+</robot>
