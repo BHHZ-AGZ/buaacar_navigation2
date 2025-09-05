@@ -37,7 +37,14 @@ ament_target_dependencies(
   sensor_msgs
   std_msgs
 )
-
+add_executable(rtk_serial_node src/rtk_serial_comm.cpp) 
+ament_target_dependencies(rtk_serial_node
+  rclcpp
+  serial
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
@@ -52,6 +59,7 @@ endif()
 
 install(TARGETS
   uart_serial_comm
+  rtk_serial_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

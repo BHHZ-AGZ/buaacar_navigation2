@@ -60,7 +60,7 @@ ahrsBringup::ahrsBringup()
   
   //publisher
   imu_pub_ = create_publisher<sensor_msgs::msg::Imu>(imu_topic.c_str(), 10);
-  gps_pub_ = create_publisher<sensor_msgs::msg::NavSatFix>(gps_topic.c_str(), 10);
+  // gps_pub_ = create_publisher<sensor_msgs::msg::NavSatFix>(gps_topic.c_str(), 10);
 
   mag_pose_pub_ = create_publisher<geometry_msgs::msg::Pose2D>(mag_pose_2d_topic.c_str(), 10);
 
@@ -527,7 +527,7 @@ void ahrsBringup::processLoop()  // 数据处理过程
       //std::cout << "lon: " << Geodetic_Position_frame_.frame.data.data_pack.Longitude << std::endl;
       //std::cout << "h: " << Geodetic_Position_frame_.frame.data.data_pack.Height << std::endl;
 
-      gps_pub_->publish(gps_data);
+      // gps_pub_->publish(gps_data);
     } 
     //读取INSGPS数据进行解析，并发布相关话题
     else if (head_type[0] == TYPE_INSGPS)

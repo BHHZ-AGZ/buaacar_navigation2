@@ -23,7 +23,7 @@ def generate_launch_description():
             'mag_pose_2d_topic':'/mag_pose_2d',
             'Magnetic_topic':'/magnetic',
             'Euler_angles_topic':'/euler_angles',
-            'gps_topic':'/gps/fix',
+            # 'gps_topic':'/gps/fix',
             'twist_topic':'/system_speed',
             'NED_odom_topic':'/NED_odometry',
             'device_type_':1}],
