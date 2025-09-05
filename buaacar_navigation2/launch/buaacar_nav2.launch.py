@@ -20,7 +20,7 @@ def generate_launch_description():
     #=============================2.声明参数，获取配置文件路径===================================================
     # use_sim_time 这里要设置成true,因为gazebo是仿真环境，其时间是通过/clock话题获取，而不是系统时间
     use_sim_time = LaunchConfiguration('use_sim_time', default='false') 
-    map_yaml_path = LaunchConfiguration('map',default=os.path.join(buaacar_navigation2_dir,'maps','302_mid360.yaml'))
+    map_yaml_path = LaunchConfiguration('map',default=os.path.join(buaacar_navigation2_dir,'maps','buaahz_2_3.yaml'))
     nav2_param_path = LaunchConfiguration('params_file',default=os.path.join(buaacar_navigation2_dir,'param','buaacar_nav2.yaml'))
     rviz_config_dir = os.path.join(nav2_bringup_dir,'rviz','nav2_default_view.rviz')
 

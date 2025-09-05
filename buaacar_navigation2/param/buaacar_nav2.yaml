@@ -23,7 +23,7 @@ amcl:
     laser_min_range: 0.5
     laser_model_type: "likelihood_field"
     max_beams: 60
-    max_particles: 5000 #粒子的最大允许数量。 ~5000
+    max_particles: 2000 #粒子的最大允许数量。 ~5000
     min_particles: 500
     odom_frame_id: "odom"
     pf_err: 0.05
@@ -35,7 +35,7 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 1.0
+    transform_tolerance: 1.5
     update_min_a: 0.05
     update_min_d: 0.01
     z_hit: 0.5
@@ -127,7 +127,7 @@ controller_server:
     failure_tolerance: 0.3  #机器人执行导航任务时容忍的失败次数。如果机器人在执行导航任务时达到了设定的失败次数，controller_server节点会认为该导航任务失败，停止机器人的运动并返回失败信息。默认值为0.3
     progress_checker_plugin: "progress_checker" #用于指定机器人在沿着全局路径移动时的路径跟踪插件。该参数的默认值为progress_checke。
     allow_replanning: true
-    emergency_stop_plugin: "emergency_stop"  # 确保启用紧急停止插件
+    # emergency_stop_plugin: "emergency_stop"  # 确保启用紧急停止插件
     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"  用于指定机器人在执行导航任务时的目标检测插件。该参数的默认值为general_goal_checker
     controller_plugins: ["FollowPath"]  #用于指定机器人在执行导航任务时的运动控制插件。该参数的默认值为FollowPath
 
