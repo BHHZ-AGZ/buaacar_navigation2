@@ -24,7 +24,7 @@ public:
     this->declare_parameter("angle_max", M_PI);
     this->declare_parameter("angle_increment", M_PI / 180.0);
     this->declare_parameter("scan_time", 0.1);
-    this->declare_parameter("range_min", 0.1);
+    this->declare_parameter("range_min", 0.5);
     this->declare_parameter("range_max", 5.0);
     this->declare_parameter("outlier_mean_k", 10); //10
     this->declare_parameter("outlier_stddev", 10.0);    //1
