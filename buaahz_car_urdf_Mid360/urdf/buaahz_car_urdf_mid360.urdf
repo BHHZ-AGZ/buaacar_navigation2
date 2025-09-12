@@ -8,16 +8,16 @@
     name="base_link">
     <inertial>
       <origin
-        xyz="0.181508050643894 -0.000380687384166356 0.222342802457855"
+        xyz="0.181506840354133 -0.000380672324322817 0.222342802457852"
         rpy="0 0 0" />
       <mass
         value="13.4432975076648" />
       <inertia
         ixx="0.281648586283361"
-        ixy="0.000125887129113238"
+        ixy="0.000125887129113248"
         ixz="0.00137500825003624"
         iyy="0.275100723244147"
-        iyz="-1.92579408042463E-05"
+        iyz="-1.91261660286568E-05"
         izz="0.18796558298456" />
     </inertial>
     <visual>
@@ -44,53 +44,20 @@
       </geometry>
     </collision>
   </link>
-  <!-- <link name="gps_link">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <inertial>
-      <mass value="0.5"/>
-      <inertia ixx="0.01" ixy="0.0" ixz="0.0"
-               iyy="0.01" iyz="0.0"
-               izz="0.01"/>
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.2" radius="0.1"/>
-      </geometry>
-      <material name="red">
-        <color rgba="0.8 0 0 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.2" radius="0.1"/>
-      </geometry>
-    </collision>
-  </link>
-
-
-  <joint name="base_to_gps_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="gps_link"/>
-    <origin xyz="0 0.12 1.28" rpy="0 0 0"/>
-    <limit effort="1000.0" velocity="1000.0"/>
-    <joint_properties damping="0.0" friction="0.0"/>
-  </joint> -->
   <link
     name="left_wheel_Link">
     <inertial>
       <origin
-        xyz="5.65098763338767E-08 -0.000107541598391603 3.10675519172611E-07"
+        xyz="5.65098763338767E-08 -0.000107541598391714 3.10675519173045E-07"
         rpy="0 0 0" />
       <mass
         value="0.913957958882337" />
       <inertia
         ixx="0.00156554399137761"
-        ixy="-7.84052736789388E-10"
-        ixz="2.68393645781587E-09"
+        ixy="-7.84052736783115E-10"
+        ixz="2.68393645781403E-09"
         iyy="0.00295301334108984"
-        iyz="-2.214253641522E-09"
+        iyz="-2.21425364152168E-09"
         izz="0.00156556205111389" />
     </inertial>
     <visual>
@@ -134,16 +101,16 @@
     name="right_wheel_Link">
     <inertial>
       <origin
-        xyz="-5.6509876444899E-08 0.000107541598391651 3.10675519180851E-07"
+        xyz="-5.65098763338767E-08 0.000107541598391658 3.10675519180851E-07"
         rpy="0 0 0" />
       <mass
         value="0.913957958882337" />
       <inertia
         ixx="0.00156554399137761"
-        ixy="-7.84052736813292E-10"
-        ixz="-2.68393645810739E-09"
+        ixy="-7.84052736810233E-10"
+        ixz="-2.68393645810819E-09"
         iyy="0.00295301334108984"
-        iyz="2.21425364140261E-09"
+        iyz="2.21425364140116E-09"
         izz="0.00156556205111389" />
     </inertial>
     <visual>
@@ -187,16 +154,16 @@
     name="lf_Link">
     <inertial>
       <origin
-        xyz="0.00478439486534085 -0.000194940503855323 -0.0200897415759267"
+        xyz="0.00478439486534085 -0.000194940503855379 -0.0200897415759267"
         rpy="0 0 0" />
       <mass
-        value="0.0764331852561443" />
+        value="0.0764331852561444" />
       <inertia
         ixx="6.38707770236009E-05"
-        ixy="2.87122519156648E-07"
+        ixy="2.87122519156645E-07"
         ixz="1.04097740579094E-05"
         iyy="5.80010180912249E-05"
-        iyz="-5.27406370320011E-07"
+        iyz="-5.27406370320012E-07"
         izz="5.40103969527263E-05" />
     </inertial>
     <visual>
@@ -246,10 +213,10 @@
         value="0.150467637750351" />
       <inertia
         ixx="7.04259874807444E-05"
-        ixy="2.55314558577735E-13"
-        ixz="-6.75188730056903E-12"
+        ixy="2.5531455858424E-13"
+        ixz="-6.75188730057266E-12"
         iyy="0.000108333870406122"
-        iyz="2.62322526670308E-10"
+        iyz="2.62322526670321E-10"
         izz="7.04301499801696E-05" />
     </inertial>
     <visual>
@@ -293,16 +260,16 @@
     name="rf_Link">
     <inertial>
       <origin
-        xyz="-0.00478453891488401 -0.352805976638596 -0.0200897415759267"
+        xyz="-0.00478439486534091 0.000194940503855439 -0.0200897415759267"
         rpy="0 0 0" />
       <mass
-        value="0.0764331852561442" />
+        value="0.0764331852561443" />
       <inertia
         ixx="6.38707770236007E-05"
-        ixy="2.8712251915662E-07"
+        ixy="2.87122519156615E-07"
         ixz="-1.04097740579094E-05"
         iyy="5.80010180912247E-05"
-        iyz="5.27406370320083E-07"
+        iyz="5.27406370320082E-07"
         izz="5.40103969527261E-05" />
     </inertial>
     <visual>
@@ -333,7 +300,7 @@
     name="rf_joint"
     type="continuous">
     <origin
-      xyz="0.3818 0.17675 0.0052475"
+      xyz="0.3818 -0.17625 0.0052475"
       rpy="0 0 0" />
     <parent
       link="base_link" />
@@ -352,11 +319,11 @@
         value="0.150467637750353" />
       <inertia
         ixx="7.04259874807456E-05"
-        ixy="2.55314513031879E-13"
-        ixz="6.75188738021184E-12"
+        ixy="2.55314513069995E-13"
+        ixz="6.75188738023169E-12"
         iyy="0.000108333870406124"
-        iyz="-2.62322526655321E-10"
-        izz="7.04301499801709E-05" />
+        iyz="-2.62322526655319E-10"
+        izz="7.0430149980171E-05" />
     </inertial>
     <visual>
       <origin
@@ -386,7 +353,7 @@
     name="rf_wheel_joint"
     type="continuous">
     <origin
-      xyz="-0.024001 -0.353 -0.055747"
+      xyz="-0.024001 0 -0.055747"
       rpy="0 0 0" />
     <parent
       link="rf_Link" />
@@ -399,17 +366,17 @@
     name="lidar_link">
     <inertial>
       <origin
-        xyz="-0.000199554718867387 -6.3832944043607E-06 -0.0174673989151422"
+        xyz="-0.000199602889489864 -6.33115251835736E-06 -0.0174673989772556"
         rpy="0 0 0" />
       <mass
-        value="0.141887205117604" />
+        value="0.141887208379736" />
       <inertia
-        ixx="4.17976354626594E-05"
-        ixy="-5.62320032199946E-09"
-        ixz="3.05339171316834E-07"
-        iyy="4.50772362205136E-05"
-        iyz="-4.50405416415078E-10"
-        izz="6.87996358400666E-05" />
+        ixx="4.17976375700044E-05"
+        ixy="-5.62044220965453E-09"
+        ixz="3.05318732076208E-07"
+        iyy="4.50772415665814E-05"
+        iyz="-4.29488291684268E-10"
+        izz="6.87996431000477E-05" />
     </inertial>
     <visual>
       <origin
@@ -439,7 +406,7 @@
     name="lidar_joint"
     type="fixed">
     <origin
-      xyz="0.2528 -0.0001 1.3221"
+      xyz="0.2522 0.0001 1.3221"
       rpy="3.1416 0 0" />
     <parent
       link="base_link" />
@@ -452,16 +419,16 @@
     name="gyro_link">
     <inertial>
       <origin
-        xyz="-0.000461131492249564 1.4976717060966E-08 0.000357931402369102"
+        xyz="-0.000461131492249522 1.4976717060966E-08 0.00035793140236913"
         rpy="0 0 0" />
       <mass
         value="0.0548244190262661" />
       <inertia
         ixx="1.0090549858139E-05"
-        ixy="7.81875144525911E-12"
-        ixz="8.08032197163182E-09"
+        ixy="7.8187514451407E-12"
+        ixz="8.08032197163176E-09"
         iyy="1.47422266994547E-05"
-        iyz="1.26941468205663E-12"
+        iyz="1.26941468203565E-12"
         izz="2.14471397750013E-05" />
     </inertial>
     <visual>
@@ -501,6 +468,428 @@
     <axis
       xyz="0 0 0" />
   </joint>
+  <link
+    name="ultrasound_link1">
+    <inertial>
+      <origin
+        xyz="-0.00759453667636931 -8.99443802770961E-09 0.00937891166550874"
+        rpy="0 0 0" />
+      <mass
+        value="0.00233498324559951" />
+      <inertia
+        ixx="7.70468056013029E-07"
+        ixy="-7.2650902942148E-13"
+        ixz="1.66641615729324E-07"
+        iyy="6.24224633553788E-07"
+        iyz="1.09044629999975E-12"
+        izz="5.5407436709916E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint1"
+    type="fixed">
+    <origin
+      xyz="0.4465 0.234 0.069062"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link1" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link2">
+    <inertial>
+      <origin
+        xyz="-0.0075945366763695 -8.99443827750979E-09 0.00937891166550878"
+        rpy="0 0 0" />
+      <mass
+        value="0.00233498324559952" />
+      <inertia
+        ixx="7.70468056013025E-07"
+        ixy="-7.2650903093401E-13"
+        ixz="1.66641615729324E-07"
+        iyy="6.2422463355379E-07"
+        iyz="1.09044630053675E-12"
+        izz="5.54074367099163E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint2"
+    type="fixed">
+    <origin
+      xyz="0.4465 -0.234 0.069062"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link2" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link3">
+    <inertial>
+      <origin
+        xyz="-0.0075945366763695 -8.99443831914315E-09 0.00937891166550879"
+        rpy="0 0 0" />
+      <mass
+        value="0.00233498324559954" />
+      <inertia
+        ixx="7.70468056013034E-07"
+        ixy="-7.26509030636472E-13"
+        ixz="1.66641615729325E-07"
+        iyy="6.24224633553797E-07"
+        iyz="1.09044630120336E-12"
+        izz="5.54074367099171E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint3"
+    type="fixed">
+    <origin
+      xyz="0.3375 -0.274 0.069062"
+      rpy="0 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link3" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link4">
+    <inertial>
+      <origin
+        xyz="-0.00759453667637 -8.99443830526536E-09 0.00937891166550917"
+        rpy="0 0 0" />
+      <mass
+        value="0.0023349832455997" />
+      <inertia
+        ixx="7.70468056013047E-07"
+        ixy="-7.26509029682989E-13"
+        ixz="1.6664161572933E-07"
+        iyy="6.24224633553813E-07"
+        iyz="1.0904463009853E-12"
+        izz="5.54074367099192E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link4.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link4.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint4"
+    type="fixed">
+    <origin
+      xyz="0.0075 -0.274 0.069062"
+      rpy="0 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link4" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link5">
+    <inertial>
+      <origin
+        xyz="-0.00759453667636922 -8.99443833302094E-09 0.00937891166550872"
+        rpy="0 0 0" />
+      <mass
+        value="0.00233498324559952" />
+      <inertia
+        ixx="7.70468056013028E-07"
+        ixy="-7.26509030943189E-13"
+        ixz="1.66641615729325E-07"
+        iyy="6.24224633553791E-07"
+        iyz="1.09044630239379E-12"
+        izz="5.54074367099164E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link5.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link5.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint5"
+    type="fixed">
+    <origin
+      xyz="-0.1015 -0.234 0.069062"
+      rpy="0 0 3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link5" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link6">
+    <inertial>
+      <origin
+        xyz="-0.00759453667636995 -8.99443836077651E-09 0.0093789116655091"
+        rpy="0 0 0" />
+      <mass
+        value="0.0023349832455996" />
+      <inertia
+        ixx="7.70468056013031E-07"
+        ixy="-7.26509032562475E-13"
+        ixz="1.66641615729328E-07"
+        iyy="6.24224633553808E-07"
+        iyz="1.09044630773067E-12"
+        izz="5.54074367099181E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link6.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link6.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_link6"
+    type="fixed">
+    <origin
+      xyz="-0.1015 0.234 0.069062"
+      rpy="0 0 -3.1416" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link6" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link7">
+    <inertial>
+      <origin
+        xyz="-0.00759453667636945 -8.99443819424306E-09 0.00937891166550896"
+        rpy="0 0 0" />
+      <mass
+        value="0.00233498324559957" />
+      <inertia
+        ixx="7.70468056013035E-07"
+        ixy="-7.26509026447812E-13"
+        ixz="1.66641615729326E-07"
+        iyy="6.24224633553793E-07"
+        iyz="1.09044630045026E-12"
+        izz="5.54074367099171E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link7.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link7.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint7"
+    type="fixed">
+    <origin
+      xyz="0.0075 0.274 0.069062"
+      rpy="0 0 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link7" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="ultrasound_link8">
+    <inertial>
+      <origin
+        xyz="0.00759453667636939 -0.0294407044490392 0.0200000089944384"
+        rpy="0 0 0" />
+      <mass
+        value="0.00233498324559952" />
+      <inertia
+        ixx="7.70468056013028E-07"
+        ixy="1.66641615729324E-07"
+        ixz="-7.2650903502607E-13"
+        iyy="5.54074367099164E-07"
+        iyz="1.09044630342785E-12"
+        izz="6.2422463355379E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link8.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://buaahz_car_urdf_mid360/meshes/ultrasound_link8.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ultrasound_joint8"
+    type="fixed">
+    <origin
+      xyz="0.3175 0.274 0.049"
+      rpy="-1.5708 3.14159 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="ultrasound_link8" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
 </robot>
-
-<!-- 2.3561925 0.3 0.068 -2.29-->
