@@ -2,6 +2,8 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <std_msgs/msg/float32_multi_array.hpp>
+// 新增：引入Range消息头文件
+#include <sensor_msgs/msg/range.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -29,10 +31,22 @@ public:
         // 声明并获取参数
         this->declare_parameter("publish_tf", false);
         this->declare_parameter("base_frame_id", "base_link");
-        this->declare_parameter("ultrasound_count", 8);  // 修改为8个传感器
+        this->declare_parameter("ultrasound_count", 8);  // 8个传感器
+        // 新增：声明超声波传感器相关参数（按实际硬件修改）
+        this->declare_parameter("ultrasound_frame_prefix", "ultrasound_link");  // 传感器坐标系前缀
+        this->declare_parameter("ultrasound_min_range", 0.21);  // 最小探测距离（2cm）
+        this->declare_parameter("ultrasound_max_range", 2.5);   // 最大探测距离（2m）
+        this->declare_parameter("ultrasound_fov", 0.79);       // 视野角（20°，转弧度：20*M_PI/180≈0.349）
+        
+        // 获取原有参数
         this->get_parameter("publish_tf", publish_tf_);
         this->get_parameter("base_frame_id", base_frame_id_);
         this->get_parameter("ultrasound_count", ultrasound_count_);
+        // 新增：获取超声波参数
+        this->get_parameter("ultrasound_frame_prefix", ultrasound_frame_prefix_);
+        this->get_parameter("ultrasound_min_range", ultrasound_min_range_);
+        this->get_parameter("ultrasound_max_range", ultrasound_max_range_);
+        this->get_parameter("ultrasound_fov", ultrasound_fov_);
         
         // 初始化里程计参数
         wheel_diameter_ = 0.170;
@@ -66,45 +80,31 @@ public:
             start_receive_thread();
         }
 
-        // 创建速度指令订阅者 /cmd_vel_nav
+        // 创建速度指令订阅者 /cmd_vel_nav（原有逻辑不变）
         cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
             "/cmd_vel_nav", 10,
             [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
                 if (serial_port_.isOpen()) {
-                    // 1. 转换速度指令（保留原有缩放逻辑）
-                    int16_t linear_x = static_cast<int16_t>(msg->linear.x * 10);  // 线速度放大10倍
-                    int16_t angular_z = static_cast<int16_t>(msg->angular.z * 10);  // 角速度放大10倍
+                    int16_t linear_x = static_cast<int16_t>(msg->linear.x * 10);  
+                    int16_t angular_z = static_cast<int16_t>(msg->angular.z * 10);  
 
-                    // 2. 构建带帧同步的数据包
-                    // 数据包结构：帧头1(0xAA) + 帧头2(0x55) + 线速度高8位 + 线速度低8位 + 角速度高8位 + 角速度低8位 + 校验和 + 帧尾(0xBB)
                     std::vector<uint8_t> packet;
-                    packet.push_back(0xAA);  // 帧头1：固定标识
-                    packet.push_back(0x55);  // 帧头2：固定标识
+                    packet.push_back(0xAA);  
+                    packet.push_back(0x55);  
                     
-                    // 线速度拆分（高8位 + 低8位）
                     packet.push_back(static_cast<uint8_t>(linear_x >> 8));
                     packet.push_back(static_cast<uint8_t>(linear_x & 0xFF));
                     
-                    // 角速度拆分（高8位 + 低8位）
                     packet.push_back(static_cast<uint8_t>(angular_z >> 8));
                     packet.push_back(static_cast<uint8_t>(angular_z & 0xFF));
                     
-                    // 校验和（仅计算数据部分：线速度2字节 + 角速度2字节）
-                    uint8_t checksum = calculateChecksum(packet.data() + 2, 4);  // 跳过帧头
+                    uint8_t checksum = calculateChecksum(packet.data() + 2, 4);  
                     packet.push_back(checksum);
                     
-                    packet.push_back(0xBB);  // 帧尾：固定标识
+                    packet.push_back(0xBB);  
 
-                    // 3. 打印发送的数据包（调试用）
-                    // RCLCPP_DEBUG(this->get_logger(), "发送速度指令数据包:");
-                    // for (size_t i = 0; i < packet.size(); ++i) {
-                    //     RCLCPP_DEBUG(this->get_logger(), "  字节%d: 0x%02X", static_cast<int>(i), packet[i]);
-                    // }
-
-                    // 4. 一次性发送整个数据包（避免时序问题）
                     try {
-                        serial_port_.write(packet);  // 批量发送，替代逐个字节发送
-                        // 短延迟确保数据发送完成（根据波特率调整，9600波特率下1字节约1ms）
+                        serial_port_.write(packet);  
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     } catch (serial::IOException& e) {
                         RCLCPP_ERROR(this->get_logger(), "串口发送错误: %s", e.what());
@@ -112,15 +112,24 @@ public:
                 }
             });
 
-        // 创建里程计发布者
+        // 创建里程计发布者（原有逻辑不变）
         odom_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
         
-        // 创建超声波数据发布者
+        // 创建超声波Float32MultiArray发布者（原有逻辑不变）
         ultrasound_pub_ = this->create_publisher<std_msgs::msg::Float32MultiArray>(
             "/ultrasound_data", 10);
-        RCLCPP_INFO(this->get_logger(), "超声波发布者创建成功: /ultrasound_data (支持%d个传感器)", ultrasound_count_);
         
-        // 初始化TF广播器
+        // 新增：创建8个Range类型发布者（对应8个传感器）
+        ultrasound_range_pubs_.resize(ultrasound_count_);
+        for (int i = 0; i < ultrasound_count_; ++i) {
+            // 话题名格式：/ultrasound_range/ultrasound_0 ~ /ultrasound_range/ultrasound_7
+            std::string topic_name = "ultrasound_" + std::to_string(i);
+            ultrasound_range_pubs_[i] = this->create_publisher<sensor_msgs::msg::Range>(
+                topic_name, 10);
+            RCLCPP_INFO(this->get_logger(), "超声波Range发布者创建成功: %s", topic_name.c_str());
+        }
+        
+        // 初始化TF广播器（原有逻辑不变）
         if (publish_tf_) {
             tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
         }
@@ -137,49 +146,56 @@ public:
     }
 
 private:
-    // ROS相关成员
+    // ROS相关成员（原有成员不变，新增Range发布者容器）
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr ultrasound_pub_;
+    // 新增：存储8个Range发布者的容器
+    std::vector<rclcpp::Publisher<sensor_msgs::msg::Range>::SharedPtr> ultrasound_range_pubs_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     
-    // 参数配置
+    // 参数配置（原有参数不变，新增超声波Range相关参数）
     bool publish_tf_;
     std::string base_frame_id_;
-    int ultrasound_count_;  // 传感器数量（8个）
+    int ultrasound_count_;  
+    // 新增：超声波Range参数
+    std::string ultrasound_frame_prefix_;  // 传感器坐标系前缀（如"ultrasound_"）
+    double ultrasound_min_range_;          // 最小探测距离（m）
+    double ultrasound_max_range_;          // 最大探测距离（m）
+    double ultrasound_fov_;                // 视野角（rad）
     
-    // 串口相关成员
+    // 串口相关成员（原有不变）
     serial::Serial serial_port_;
     std::thread receive_thread_;
     bool keep_receiving_ = false;
     
-    // 里程计帧头和状态
+    // 里程计帧头和状态（原有不变）
     const uint8_t odom_frame_header_[4] = {0x43, 0x6C, 0x60, 0x03};
     int odom_header_state_ = 0;
     
-    // 超声波帧头和状态（修改为10字节帧：2字节头+8字节数据）
-    const uint8_t ultrasound_frame_header_[2] = {0xAB, 0xCD};  // 前2位固定帧头
+    // 超声波帧头和状态（原有不变）
+    const uint8_t ultrasound_frame_header_[2] = {0xAB, 0xCD};  
     int ultrasound_header_state_ = 0;
-    const size_t ULTRASOUND_DATA_SIZE = 8;  // 后8位为传感器数据
-    uint8_t ultrasound_data_[8] = {0};      // 8个传感器数据缓冲区
+    const size_t ULTRASOUND_DATA_SIZE = 8;  
+    uint8_t ultrasound_data_[8] = {0};      
     int ultrasound_data_count_ = 0;
     
-    // 里程计参数
+    // 里程计参数和状态（原有不变）
     double wheel_diameter_;
     double wheel_radius_;
     double wheel_base_;
-    
-    // 里程计状态
     double x_;
     double y_;
     double theta_;
     rclcpp::Time last_time_;
 
+    // 原有函数：启动接收线程（逻辑不变）
     void start_receive_thread() {
         keep_receiving_ = true;
         receive_thread_ = std::thread(&UartSerialComm::receive_data, this);
     }
 
+    // 原有函数：接收串口数据（逻辑不变）
     void receive_data() {
         const size_t ODOM_DATA_SIZE = 4;
         uint8_t odom_data_[ODOM_DATA_SIZE] = {0};
@@ -193,34 +209,32 @@ private:
                         continue;
                     }
 
-                    // 优先检测超声波帧头（0xAB, 0xCD）
+                    // 优先检测超声波帧头（原有逻辑不变）
                     if (ultrasound_header_state_ < 2) {
                         if (current_byte == ultrasound_frame_header_[ultrasound_header_state_]) {
                             ultrasound_header_state_++;
                             if (ultrasound_header_state_ == 2) {
-                                ultrasound_data_count_ = 0;  // 帧头匹配完成，开始接收8字节数据
+                                ultrasound_data_count_ = 0;  
                                 RCLCPP_DEBUG(this->get_logger(), "超声波帧头匹配成功，准备接收8字节数据");
                             }
                         } else {
-                            ultrasound_header_state_ = 0;  // 帧头匹配失败，重置
+                            ultrasound_header_state_ = 0;  
                         }
                     }
-                    // 超声波帧头匹配成功，接收8字节数据
+                    // 超声波帧头匹配成功，接收8字节数据（原有逻辑不变）
                     else {
                         ultrasound_data_[ultrasound_data_count_] = current_byte;
                         ultrasound_data_count_++;
                         
-                        // 8字节数据接收完成
                         if (static_cast<size_t>(ultrasound_data_count_) >= ULTRASOUND_DATA_SIZE) {
-                            parse_ultrasound_data(ultrasound_data_);
-                            // 重置状态，准备下一帧
+                            parse_ultrasound_data(ultrasound_data_);  // 解析数据（内部新增Range发布）
                             ultrasound_header_state_ = 0;
                             ultrasound_data_count_ = 0;
                         }
                         continue;
                     }
 
-                    // 检测里程计帧头
+                    // 检测里程计帧头（原有逻辑不变）
                     if (odom_header_state_ < 4) {
                         if (current_byte == odom_frame_header_[odom_header_state_]) {
                             odom_header_state_++;
@@ -232,7 +246,7 @@ private:
                             odom_header_state_ = (current_byte == odom_frame_header_[0]) ? 1 : 0;
                         }
                     }
-                    // 里程计帧头匹配成功，接收数据部分
+                    // 里程计帧头匹配成功，接收数据部分（原有逻辑不变）
                     else {
                         odom_data_[odom_data_count_] = current_byte;
                         odom_data_count_++;
@@ -253,7 +267,7 @@ private:
         }
     }
 
-    // 解析里程计数据
+    // 原有函数：解析里程计数据（逻辑不变）
     void parse_odom_data(const uint8_t* data) {
         int16_t left_raw = static_cast<int16_t>((data[1] << 8) | data[0]);
         float left_rpm = left_raw * 0.1f;
@@ -264,32 +278,72 @@ private:
         calculate_odometry(left_rpm, right_rpm);
     }
 
-    // 解析超声波数据（修改为8个传感器）
+    // 原有函数：解析超声波数据（新增Range消息发布逻辑）
     void parse_ultrasound_data(const uint8_t* data) {
         std::vector<float> distances;
+    for (int i = 0; i < 8; ++i) {
+        uint8_t distance_cm = data[i];  
+        float distance_m = distance_cm / 100.0f;  
+        distances.push_back(distance_m);  // 原始顺序存入distances（不修改，保持与/ultrasound_data一致）
+    }
+//数据调整
+    std::unordered_map<int, int> index_map = {
+        {0, 1}, 
+        {1, 0},
+        {2, 7},  
+        {3, 6}, 
+        {4, 5},  
+        {5, 4},  
+        {6, 3},  
+        {7, 2}   
+    };
 
-        // 解析8个传感器数据（每个1字节，单位：厘米，转换为米）
-        // 假设每个字节代表距离值（0-255厘米）
-        for (int i = 0; i < 8; ++i) {
-            uint8_t distance_cm = data[i];  // 1字节数据（厘米）
-            float distance_m = distance_cm / 100.0f;  // 转换为米
-            distances.push_back(distance_m);
+    // 新增：按映射表发布Range消息（遍历映射表，而非原始索引）
+    for (auto& [original_idx, target_idx] : index_map) {
+        // 确保目标索引在发布者数组范围内
+        if (target_idx < 0 || target_idx >= ultrasound_range_pubs_.size()) {
+            RCLCPP_WARN(this->get_logger(), "无效的传感器索引：%d，跳过发布", target_idx);
+            continue;
+        }
+        // 仅当发布者有订阅者时发布（避免无效数据）
+        if (ultrasound_range_pubs_[target_idx]->get_subscription_count() == 0) {
+            continue;
         }
 
-        // 打印8个传感器数据
-        // RCLCPP_INFO(this->get_logger(), "超声波数据（8个传感器）:");
-        // for (size_t i = 0; i < distances.size(); ++i) {
-        //     RCLCPP_INFO(this->get_logger(), "  传感器%d: %.2f米 (原始值: 0x%02X)", 
-        //               static_cast<int>(i), distances[i], data[i]);
-        // }
+        // 获取调整后的数据（原始索引对应的数据 → 目标传感器）
+        float adjusted_distance = distances[original_idx];
+        auto range_msg = sensor_msgs::msg::Range();
 
-        // 发布8个传感器数据
+        // 1. 消息头部（时间戳+坐标系：ultrasound_1~ultrasound_8，对应target_idx 0~7）
+        range_msg.header.stamp = this->get_clock()->now();
+        range_msg.header.frame_id = ultrasound_frame_prefix_ + std::to_string(target_idx + 1);  // 如"ultrasound_1"
+
+        // 2. 传感器类型（超声波固定为0）
+        range_msg.radiation_type = sensor_msgs::msg::Range::ULTRASOUND;
+
+        // 3. 视野角、最小/最大量程（从参数获取）
+        range_msg.field_of_view = ultrasound_fov_;
+        range_msg.min_range = ultrasound_min_range_;
+        range_msg.max_range = ultrasound_max_range_;
+
+        // 4. 实际测量距离（过滤无效值：小于最小量程或大于最大量程设为inf）
+        if (adjusted_distance < ultrasound_min_range_ || adjusted_distance > ultrasound_max_range_) {
+            range_msg.range = std::numeric_limits<float>::infinity();
+        } else {
+            range_msg.range = adjusted_distance;
+        }
+
+        // 5. 发布Range消息（目标传感器的发布者）
+        ultrasound_range_pubs_[target_idx]->publish(range_msg);
+    }
+
+        // 原有逻辑：发布Float32MultiArray消息（不变）
         std_msgs::msg::Float32MultiArray msg;
         msg.data = distances;
         ultrasound_pub_->publish(msg);
     }
 
-    // 计算里程计数据并发布
+    // 原有函数：计算里程计数据并发布（逻辑不变）
     void calculate_odometry(float left_rpm, float right_rpm) {
         rclcpp::Time current_time = this->get_clock()->now();
         double dt = (current_time - last_time_).seconds();
@@ -363,4 +417,3 @@ int main(int argc, char * argv[]) {
     rclcpp::shutdown();
     return 0;
 }
-    
