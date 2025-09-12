@@ -23,7 +23,7 @@ amcl:
     laser_min_range: 0.5
     laser_model_type: "likelihood_field"
     max_beams: 60
-    max_particles: 5000 #粒子的最大允许数量。 ~5000
+    max_particles: 2000 #粒子的最大允许数量。 ~5000
     min_particles: 500
     odom_frame_id: "odom"
     pf_err: 0.05
@@ -35,7 +35,7 @@ amcl:
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
-    transform_tolerance: 1.0
+    transform_tolerance: 1.5
     update_min_a: 0.05
     update_min_d: 0.01
     z_hit: 0.5
@@ -120,14 +120,14 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: False
-    controller_frequency: 10.0  #控制器的控制频率。默认值为20.0赫兹。
+    controller_frequency: 5.0  #控制器的控制频率。默认值为20.0赫兹。
     min_x_velocity_threshold: 0.001 #机器人在x轴最小线速度。默认值为0.001 ~0.001
-    min_y_velocity_threshold: 0.5 #机器人在y轴最小线速度。默认值为0.5
+    min_y_velocity_threshold: 0.0 #机器人在y轴最小线速度。默认值为0.5
     min_theta_velocity_threshold: 0.001 #机器人的最小旋转角速度。默认值为0.001  ~
     failure_tolerance: 0.3  #机器人执行导航任务时容忍的失败次数。如果机器人在执行导航任务时达到了设定的失败次数，controller_server节点会认为该导航任务失败，停止机器人的运动并返回失败信息。默认值为0.3
     progress_checker_plugin: "progress_checker" #用于指定机器人在沿着全局路径移动时的路径跟踪插件。该参数的默认值为progress_checke。
     allow_replanning: true
-    emergency_stop_plugin: "emergency_stop"  # 确保启用紧急停止插件
+    # emergency_stop_plugin: "emergency_stop"  # 确保启用紧急停止插件
     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"  用于指定机器人在执行导航任务时的目标检测插件。该参数的默认值为general_goal_checker
     controller_plugins: ["FollowPath"]  #用于指定机器人在执行导航任务时的运动控制插件。该参数的默认值为FollowPath
 
@@ -169,15 +169,15 @@ controller_server:
       decel_lim_x: -2.5 #x方向减速度限制
       decel_lim_y: 0.0
       decel_lim_theta: -3.2
-      vx_samples: 20  #线速度采样数，用于搜索最优解
-      vy_samples: 5
-      vtheta_samples: 20
-      sim_time: 1.7 #模拟时间，用于计算轨迹
+      vx_samples: 15  #线速度采样数，用于搜索最优解 20
+      vy_samples: 0
+      vtheta_samples: 10
+      sim_time: 1.0 #模拟时间，用于计算轨迹
       linear_granularity: 0.05  #线性路径的分辨率，即路径中相邻两个点之间的距离，单位为m。
       angular_granularity: 0.025  #旋转路径的分辨率，即路径中相邻两个点之间的角度，单位为rad。
       transform_tolerance: 0.5  #机器人状态变换的容忍度，即机器人位置和姿态在传递过程中的误差容忍度。
       xy_goal_tolerance: 0.25 #xy平面的目标容差
-      trans_stopped_velocity: 0.25  #线速度小于该值，机器人被认为已停止
+      trans_stopped_velocity: 0.1  #线速度小于该值，机器人被认为已停止
       short_circuit_trajectory_evaluation: True #是否提前结束轨迹评估
       stateful: True  #是否保留状态信息
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]  #用于评估轨迹的批评家。这是一个评估器，它根据各种因素对轨迹进行评估，以确定其质量。它是自主导航系统中的一个重要组成部分，因为它可以帮助机器人决定最佳路径。
@@ -195,18 +195,18 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0
-      publish_frequency: 2.0
-      global_frame: odom
-      robot_base_frame: base_link
+      update_frequency: 10.0   #代价地图更新频率
+      publish_frequency: 5.0  #发布频率
+      global_frame: odom    #全局坐标系
+      robot_base_frame: base_link #机器人基座坐标系
       use_sim_time: False
-      rolling_window: true
-      width: 3
-      height: 3
+      rolling_window: true  #不使用滚动窗口
+      width: 3   # 地图宽度 (cells)，rolling_window为false时可忽略
+      height: 3   # 地图高度 (cells)，rolling_window为false时可忽略
       resolution: 0.05
-      # robot_radius: 0.275
-      footprint: "[[0.55,0.275],[0.55,-0,275],[0, -0.275],[0,0.275]]"
-      plugins: ["static_layer", "obstacle_layer"]
+      # robot_radius: 0.35
+      footprint: "[[0.44,0.275],[0.44,-0.275],[-0.11,-0.275],[-0.11,0.275]]"
+      plugins: ["static_layer", "obstacle_layer", "range_sensor_layer"]
       inflation_layer: #膨胀层插件名称
         enabled: True
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -215,13 +215,19 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan
+        observation_sources: scan 
         scan:
           topic: /scan
           max_obstacle_height: 2.0
-          clearing: True
-          marking: True
-          data_type: "LaserScan"
+          clearing: True   # 是否用于清除障碍物
+          marking: True    # 是否用于标记障碍物
+          data_type: "LaserScan" 
+      range_sensor_layer:
+        plugin: "nav2_costmap_2d::RangeSensorLayer"
+        enabled: True
+        topic: /ultrasound_0 /ultrasound_1 /ultrasound_2 /ultrasound_3 /ultrasound_4 /ultrasound_5 /ultrasound_6 /ultrasound_7
+        mark_threshold: 0.7
+        inflate_cone: 1.0 
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -240,8 +246,8 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: False
-      # robot_radius: 0.275
-      footprint: "[[0.55,0.275],[0.55,-0,275],[0, -0.275],[0,0.275]]"
+      # robot_radius: 0.35
+      footprint: "[[0.44,0.275],[0.44,-0.275],[-0.11,-0.275],[-0.11,0.275]]"
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -296,7 +302,7 @@ planner_server:
     planner_plugins: ["GridBased"]   #路径规划器的插件名称，即使用哪个路径规划器实现路径规划。默认值为grid_based，即使用基于栅格地图的路径规划器。也可以设置为其他插件名称，例如navfn、navfn_planner、teb_local_planner等。
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"
-      tolerance: 0.25   #路径规划器的默认容忍误差，即机器人到达目标点的最大距离误差。默认值为0.5米。
+      tolerance: 0.1   #路径规划器的默认容忍误差，即机器人到达目标点的最大距离误差。默认值为0.5米。
       use_astar: true  #是否使用A*算法进行路径规划。默认值为false。
       allow_unknown: false   #是否允许路径规划经过未知区域。默认值为false。
       smooth_path: true
@@ -326,7 +332,7 @@ recoveries_server:
   ros__parameters:
     costmap_topic: local_costmap/costmap_raw
     footprint_topic: local_costmap/published_footprint
-    cycle_frequency: 10.0
+    cycle_frequency: 5.0
     recovery_plugins: ["spin", "backup", "wait"]
     spin:
       plugin: "nav2_recoveries/Spin"
