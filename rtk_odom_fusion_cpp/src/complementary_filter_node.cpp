@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
+#include <mutex>
 
 #include "rclcpp/rclcpp.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -21,11 +22,13 @@ public:
   : Node("complementary_filter_fusion"), 
     alpha_position_(0.05),
     alpha_orientation_(0.02),
-    use_imu_for_orientation_(true)
+    use_imu_for_orientation_(true),
+    last_odom_(nullptr),
+    last_angular_velocity_(std::nullopt)
   {
     // 声明参数
-    this->declare_parameter<double>("alpha_position", 0.05);  //较小的值（如 0.01-0.1）使融合结果更信任里程计的高频变化
-    this->declare_parameter<double>("alpha_orientation", 0.02); //较小的值（如 0.01-0.05）使融合结果更信任 IMU 的高频变化
+    this->declare_parameter<double>("alpha_position", 0.05);
+    this->declare_parameter<double>("alpha_orientation", 0.02);
     this->declare_parameter<bool>("use_imu_for_orientation", true);
     
     alpha_position_ = this->get_parameter("alpha_position").as_double();
@@ -65,6 +68,19 @@ public:
 private:
   void rtk_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
   {
+    std::lock_guard<std::mutex> lock(data_mutex_);
+    
+    // 检查消息是否有效
+    if (!msg) {
+      RCLCPP_WARN(this->get_logger(), "Received null RTK message");
+      return;
+    }
+    
+    RCLCPP_DEBUG(this->get_logger(), "Received RTK data: x=%.3f, y=%.3f, z=%.3f", 
+                 msg->pose.pose.position.x, 
+                 msg->pose.pose.position.y, 
+                 msg->pose.pose.position.z);
+    
     // 如果是第一次收到RTK数据，用它来初始化融合位姿
     if (!is_rtk_init_) {
       current_pose_.position = msg->pose.pose.position;
@@ -91,13 +107,26 @@ private:
       tf2::fromMsg(msg->pose.pose.orientation, rtk_quat);
       tf2::fromMsg(current_pose_.orientation, current_quat);
       
+      // 检查四元数是否有效
+      if (rtk_quat.length() < 1e-6) {
+        RCLCPP_WARN(this->get_logger(), "Invalid quaternion received, skipping update");
+        return;
+      }
+      
+      // 归一化四元数
+      rtk_quat.normalize();
+      current_quat.normalize();
+      
       // 确保四元数方向一致
       if (rtk_quat.dot(current_quat) < 0.0) {
-        // 修复：明确使用成员函数形式的负号运算符
         rtk_quat = rtk_quat.operator-();
       }
       
-      filtered_quat = current_quat.slerp(rtk_quat, alpha_orientation_);
+      // 检查插值参数是否在有效范围内
+      double t = std::max(0.0, std::min(alpha_orientation_, 1.0));
+      filtered_quat = current_quat.slerp(rtk_quat, t);
+      filtered_quat.normalize();
+      
       current_pose_.orientation = tf2::toMsg(filtered_quat);
     }
     
@@ -106,6 +135,14 @@ private:
   
   void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
   {
+    std::lock_guard<std::mutex> lock(data_mutex_);
+    
+    // 检查消息是否有效
+    if (!msg) {
+      RCLCPP_WARN(this->get_logger(), "Received null odometry message");
+      return;
+    }
+    
     if (!is_rtk_init_) {
       // 没有RTK初始位姿前，无法进行融合
       return;
@@ -121,7 +158,17 @@ private:
     // 计算自上一次里程计更新以来的时间差
     rclcpp::Time current_time = msg->header.stamp;
     rclcpp::Time last_time = last_odom_time_;
-    double dt = (current_time - last_time).seconds();
+    
+    // 确保时间有效
+    if (last_time.seconds() == 0 && last_time.nanoseconds() == 0) {
+      last_odom_ = msg;
+      last_odom_time_ = msg->header.stamp;
+      return;
+    }
+    
+    // 使用rclcpp::Duration计算时间差
+    rclcpp::Duration duration = current_time - last_time;
+    double dt = duration.seconds();
     
     if (dt <= 0) {
       return;
@@ -151,6 +198,14 @@ private:
   
   void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg)
   {
+    std::lock_guard<std::mutex> lock(data_mutex_);
+    
+    // 检查消息是否有效
+    if (!msg) {
+      RCLCPP_WARN(this->get_logger(), "Received null IMU message");
+      return;
+    }
+    
     if (!use_imu_for_orientation_) {
       return; // 如果不使用IMU进行朝向估计，则直接返回
     }
@@ -169,13 +224,26 @@ private:
     tf2::fromMsg(msg->orientation, imu_quat);
     tf2::fromMsg(current_pose_.orientation, current_quat);
     
+    // 检查四元数是否有效
+    if (imu_quat.length() < 1e-6) {
+      RCLCPP_WARN(this->get_logger(), "Invalid IMU quaternion received, skipping update");
+      return;
+    }
+    
+    // 归一化四元数
+    imu_quat.normalize();
+    current_quat.normalize();
+    
     // 确保四元数方向一致
     if (imu_quat.dot(current_quat) < 0.0) {
-      // 修复：明确使用成员函数形式的负号运算符
       imu_quat = imu_quat.operator-();
     }
     
-    filtered_quat = current_quat.slerp(imu_quat, alpha_orientation_);
+    // 检查插值参数是否在有效范围内
+    double t = std::max(0.0, std::min(alpha_orientation_, 1.0));
+    filtered_quat = current_quat.slerp(imu_quat, t);
+    filtered_quat.normalize();
+    
     current_pose_.orientation = tf2::toMsg(filtered_quat);
     
     // 记录角速度，用于发布
@@ -206,11 +274,14 @@ private:
       fused_odom->twist.twist.angular = last_angular_velocity_.value();
     }
     
+    // 保存header信息（关键修复：发布前复制header）
+    auto odom_header = fused_odom->header;
+    // 发布消息（此时fused_odom所有权转移，但odom_header已保存）
     fused_odom_pub_->publish(std::move(fused_odom));
     
-    // 2. 发布PoseStamped消息
+    // 2. 发布PoseStamped消息（使用保存的header，避免访问空指针）
     auto fused_pose = std::make_unique<geometry_msgs::msg::PoseStamped>();
-    fused_pose->header = fused_odom->header;
+    fused_pose->header = odom_header;  // 使用预存的header
     fused_pose->pose = current_pose_;
     fused_pose_pub_->publish(std::move(fused_pose));
     
@@ -225,6 +296,7 @@ private:
     t.transform.rotation = current_pose_.orientation;
     tf_broadcaster_->sendTransform(t);
   }
+
   
   // 参数
   double alpha_position_;      // 位置滤波系数
@@ -242,6 +314,9 @@ private:
   
   // TF广播器
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  
+  // 互斥锁保护共享数据
+  std::mutex data_mutex_;
   
   // 内部状态变量
   geometry_msgs::msg::Pose current_pose_;
