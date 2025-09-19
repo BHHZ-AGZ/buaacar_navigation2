@@ -20,6 +20,8 @@ find_package(nlohmann_json REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)  # TF与消息转换依赖
 find_package(geometry_msgs REQUIRED)  # 导航目标消息依赖
 find_package(nav2_msgs REQUIRED)
+find_package(CURL REQUIRED)
+find_package(Threads REQUIRED)
 
 # 包含头文件目录（确保所有自定义头文件可被找到）
 include_directories(
@@ -70,12 +72,16 @@ ament_target_dependencies(navigation_goal_lib
   nlohmann_json  # JSON处理
   rclcpp_action
   nav2_msgs
+  std_msgs
+
 )
 
 target_link_libraries(navigation_goal_lib
   base_link_pose_lib  # 依赖位姿计算库（获取地图参数）
   rclcpp::rclcpp
   ${Boost_LIBRARIES}
+  CURL::libcurl
+  Threads::Threads
 )
 
 # 3. 定义主可执行文件http_bridge_server

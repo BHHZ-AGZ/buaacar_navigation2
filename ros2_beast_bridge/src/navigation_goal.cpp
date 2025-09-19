@@ -9,7 +9,12 @@
 NavigationGoalHandler::NavigationGoalHandler(
     rclcpp::Node::SharedPtr node,
     std::unique_ptr<BaseLinkPoseCalculator>& pose_calculator
-) : node_(node), pose_calculator_(pose_calculator) { 
+) : node_(node), pose_calculator_(pose_calculator), rtk_thread_running_(true), latest_rtk_data_("") { 
+    rtk_raw_sub_ = node_->create_subscription<std_msgs::msg::String>(
+        "/rtk_raw_data",
+        10,  // 队列长度
+        std::bind(&NavigationGoalHandler::rtk_raw_data_callback, this, std::placeholders::_1)
+    );
     // 初始化导航目标发布者（兼容Nav2）
     goal_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>(
         "/goal_pose", 
@@ -33,9 +38,17 @@ NavigationGoalHandler::NavigationGoalHandler(
         "/ultrasound_data", 10, std::bind(&NavigationGoalHandler::ultrasound_callback, this, std::placeholders::_1));
     init_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
     cmd_vel_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+    rtk_thread_ = std::thread(&NavigationGoalHandler::rtk_location_request_loop, this);
+    RCLCPP_INFO(node_->get_logger(), "RTK POST接口调用线程已启动");
     RCLCPP_INFO(node_->get_logger(), "NavigationGoalHandler初始化完成");
 }
-
+NavigationGoalHandler::~NavigationGoalHandler() {
+    rtk_thread_running_ = false;
+    if (rtk_thread_.joinable()) {
+        rtk_thread_.join();
+        RCLCPP_INFO(node_->get_logger(), "RTK POST接口调用线程已退出");
+    }
+}
 // 全局路径回调：更新最新路径缓存
 void NavigationGoalHandler::path_callback(const nav_msgs::msg::Path::SharedPtr msg) {
     std::lock_guard<std::mutex> lock(path_mutex_);
@@ -963,4 +976,73 @@ void NavigationGoalHandler::handle_robot_local_status(
 
     boost::beast::ostream(res.body()) << response.dump(4);
     res.prepare_payload();
+}
+void NavigationGoalHandler::rtk_raw_data_callback(const std_msgs::msg::String::SharedPtr msg) {
+    std::lock_guard<std::mutex> lock(rtk_data_mutex_);
+    latest_rtk_data_ = msg->data;
+    RCLCPP_DEBUG(node_->get_logger(), "收到RTK数据: %s", msg->data.c_str());
+}
+
+// 2. curl回调函数（静态函数，用于接收HTTP响应）
+size_t NavigationGoalHandler::curl_write_callback(void* ptr, size_t size, size_t nmemb, std::string* data) {
+    if (!data) return 0;
+    data->append(static_cast<const char*>(ptr), size * nmemb);
+    return size * nmemb;
+}
+
+
+std::string NavigationGoalHandler::prepare_post_data() {
+    std::lock_guard<std::mutex> lock(rtk_data_mutex_);
+    
+    json post_data;
+    std::string rtk_data_content = latest_rtk_data_.empty() ? "未收到RTK数据" : latest_rtk_data_;
+    post_data["rtkData"] =  rtk_data_content;
+    // post_data["timestamp"] = rclcpp::Clock().now().seconds();
+
+    // 新增：打印构造后的完整入参（调试用）
+    std::string post_data_str = post_data.dump(4);  // 格式化JSON，便于阅读
+    RCLCPP_DEBUG(node_->get_logger(), "构造RTK POST请求入参: \n%s", post_data_str.c_str());
+
+    return post_data_str;
+}
+
+void NavigationGoalHandler::rtk_location_request_loop() {
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        RCLCPP_ERROR(node_->get_logger(), "curl初始化失败");
+        return;
+    }
+
+    const std::string url = "https://ibex-obliging-mole.ngrok-free.app/openapi/v1/rtk/location";
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_callback);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+
+    struct curl_slist* headers = nullptr;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    while (rtk_thread_running_) {
+        std::string post_data = prepare_post_data();
+        RCLCPP_INFO(node_->get_logger(), "即将发送RTK POST请求，入参: \n%s", post_data.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_data.c_str());
+
+        std::string response;
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        CURLcode res = curl_easy_perform(curl);
+
+        if (res == CURLE_OK) {
+            RCLCPP_INFO(node_->get_logger(), "POST成功: %s", response.c_str());
+        } else {
+            RCLCPP_WARN(node_->get_logger(), "POST失败: %s", curl_easy_strerror(res));
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
 }

@@ -22,6 +22,10 @@
 #include "rclcpp/subscription.hpp" 
 #include <mutex> 
 #include <boost/beast.hpp>
+#include <curl/curl.h>
+#include <thread>
+#include <chrono>
+#include <std_msgs/msg/string.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -66,6 +70,7 @@ public:
         rclcpp::Node::SharedPtr node,
         std::unique_ptr<BaseLinkPoseCalculator>& pose_calculator  // 改为接收 unique_ptr 引用
     );
+    ~NavigationGoalHandler();
     std::mutex& get_path_mutex() {
         return path_mutex_;
     }
@@ -152,6 +157,20 @@ private:
     nav2_msgs::action::NavigateToPose::Goal paused_goal_;
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr init_pose_pub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;  // 新增
+
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr rtk_raw_sub_;  // 修正：使用声明的命名空间
+    std::string latest_rtk_data_;  // 存储最新RTK话题数据
+    std::mutex rtk_data_mutex_;    // 保护数据的互斥锁（线程安全）
+    
+    // 2. 线程相关成员变量
+    std::thread rtk_thread_;
+    std::atomic<bool> rtk_thread_running_;
+
+    // 3. 私有成员函数声明（关键：之前缺少回调函数声明）
+    void rtk_raw_data_callback(const std_msgs::msg::String::SharedPtr msg);   // 话题回调函数
+    static size_t curl_write_callback(void* ptr, size_t size, size_t nmemb, std::string* data);
+    std::string prepare_post_data();
+    void rtk_location_request_loop();
 };
 
 #endif  // NAVIGATION_GOAL_HPP
