@@ -15,6 +15,9 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+include_directories(${EIGEN3_INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,7 +32,9 @@ ament_target_dependencies(complementary_filter_node
   std_msgs
   sensor_msgs
 )
-
+target_link_libraries(complementary_filter_node 
+  ${EIGEN3_LIBRARIES}
+)
 install(TARGETS
   complementary_filter_node
   DESTINATION lib/${PROJECT_NAME}

@@ -1,0 +1,7 @@
+# 请求：目标点的位姿
+geometry_msgs/Pose pose
+
+---
+# 响应：是否成功
+bool success
+string message

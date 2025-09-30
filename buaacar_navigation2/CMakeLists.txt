@@ -13,18 +13,9 @@ find_package(tf2_ros REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 
-add_executable(map_odom_broadcaster src/map_odom_broadcaster.cpp)
-ament_target_dependencies(map_odom_broadcaster
-  rclcpp
-  tf2_ros
-  geometry_msgs
-  tf2
-)
 
-install(TARGETS
-  map_odom_broadcaster
-  DESTINATION lib/${PROJECT_NAME}
-)
+
+
 install(
   DIRECTORY launch param maps
   DESTINATION share/${PROJECT_NAME}

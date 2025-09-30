@@ -44,6 +44,40 @@
       </geometry>
     </collision>
   </link>
+  <link name="gps_link">
+    <visual>
+      <geometry>
+        <box size="0.08 0.08 0.04"/>  <!-- 长8cm、宽8cm、高4cm的立方体 -->
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 0.8"/>  <!-- 半透明蓝色 -->
+      </material>
+      <origin xyz="0 0 0" rpy="0 0 0"/>  <!-- 模型自身姿态 -->
+    </visual>
+
+    <!-- 碰撞模型：与可视化模型一致 -->
+    <collision>
+      <geometry>
+        <box size="0.08 0.08 0.04"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </collision>
+
+    <!-- 惯性参数：质量较小，惯性矩阵简化 -->
+    <inertial>
+      <mass value="0.1"/>  <!-- 质量100克 -->
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+              iyy="0.0001" iyz="0.0"
+              izz="0.0001"/>  <!-- 简化的惯性矩阵 -->
+    </inertial>
+  </link>
+  <joint name="base_link_to_gps_link" type="fixed">
+    <parent link="base_link"/>  <!-- 父链接为机器人基础链接 -->
+    <child link="gps_link"/>  
+  <origin xyz="0 0 0" rpy="0 0 -2.335"/>
+    <!-- <origin xyz="0.2 -0.2 1.4" rpy="0 0 2.335"/> -->
+    <!-- 含义：在base_link前方30cm、中心位置、高度40cm处安装 -->
+  </joint>
   <link
     name="left_wheel_Link">
     <inertial>

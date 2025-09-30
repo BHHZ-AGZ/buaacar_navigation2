@@ -22,7 +22,7 @@ def generate_launch_description():
                     'angle_max': 3.14159,
                     'angle_increment': 0.0087,
                     'scan_time': 0.1,
-                    'range_min': 0.5,
+                    'range_min': 0.4,
                     'range_max': 100.0,
                     'z_projection_min': -1.5,  # 新增：Z轴投影最小高度0.05
                     'z_projection_max': 29.0,   # 新增：Z轴投影最大高度

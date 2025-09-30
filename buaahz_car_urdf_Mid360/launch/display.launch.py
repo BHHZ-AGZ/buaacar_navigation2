@@ -25,6 +25,8 @@ def generate_launch_description():
     robot_localization_launch_path = "/home/test/robot_ws/src/robot_localization/launch/ekf.launch.py"
     fdilink_ahrs_launch_path = '/home/test/robot_ws/src/fdilink_ahrs/launch/ahrs_driver.launch.py'
     buaacar_navigation2_launch_path = "/home/test/robot_ws/src/buaacar_navigation2/launch/buaacar_nav2.launch.py"
+    gps_to_utm_launch_path = "/home/test/robot_ws/src/gps_to_utm/launch/utm_transformer.launch.py"
+    complementary_filter_launch_path = "/home/test/robot_ws/src/rtk_odom_fusion_cpp/launch/fusion.launch.py"
     robot_description_content = Command(['xacro ', urdf_path])
     robot_description = ParameterValue(robot_description_content, value_type=str)
 
@@ -60,6 +62,12 @@ def generate_launch_description():
         name='ros2_laser_scan_matcher_node',
         output='screen',
     )
+    rtk_serial_comm_node = Node(
+        package='uart_serial_comm',
+        executable='rtk_serial_node',
+        name= 'rtk_serial_comm_node',
+        output='screen',
+    )
     uart_serial_comm_node = Node(
         package= 'uart_serial_comm',
         executable= 'uart_serial_comm',
@@ -78,12 +86,17 @@ def generate_launch_description():
     robot_localization_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(robot_localization_launch_path))
     fdilink_ahrs_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(fdilink_ahrs_launch_path))
     buaacar_navigation2_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(buaacar_navigation2_launch_path))
+    gps_to_utm_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(gps_to_utm_launch_path))
+    complementary_filter_launch = IncludeLaunchDescription(PythonLaunchDescriptionSource(complementary_filter_launch_path))
     return LaunchDescription([
         model_arg,
         joint_state_publisher_gui_node,
         robot_state_publisher_node,
         ros2_beast_bridge_node,
         uart_serial_comm_node,
+        # rtk_serial_comm_node,
+        # gps_to_utm_launch,
+        # complementary_filter_launch,
         fdilink_ahrs_launch,
         livox_lidar_launch_path,
         cloud_to_scan_launch,
