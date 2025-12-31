@@ -37,9 +37,9 @@ def generate_launch_description():
         "rviz_cfg", default_value=default_rviz_config_path, description="RViz config file path"
     )
 
-    declare_map_path = DeclareLaunchArgument("map", default_value="", description="Path to PCD map file")
+    declare_map_path = DeclareLaunchArgument("map", default_value="/home/test/robot_ws/src/FAST_LIO_LOCALIZATION2/PCD/test.pcd", description="Path to PCD map file")
     declare_pcd_map_topic = DeclareLaunchArgument(
-        "pcd_map_topic", default_value="/map", description="Topic to publish PCD map"
+        "pcd_map_topic", default_value="/cloud_pcd", description="Topic to publish PCD map"
     )
     # Load parameters from yaml file
 

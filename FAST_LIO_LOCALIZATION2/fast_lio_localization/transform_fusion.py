@@ -67,7 +67,7 @@ class TransformFusion(Node):
         # print(self.cur_odom_to_baselink.header)
         transform_stamped_msg = tf2_ros.TransformStamped(
                 header = self.cur_odom_to_baselink.header,
-                child_frame_id = "camera_init",
+                child_frame_id = "odom",
                 transform = transform_msg
             )
         transform_stamped_msg.header.frame_id = "map"

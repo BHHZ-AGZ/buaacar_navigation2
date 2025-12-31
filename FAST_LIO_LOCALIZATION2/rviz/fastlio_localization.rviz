@@ -55,7 +55,7 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
+        body:
           Value: true
         lidar_link:
           Value: true
@@ -69,7 +69,7 @@ Visualization Manager:
       Tree:
         map:
           lidar_link:
-            base_link:
+            body:
               {}
       Update Interval: 0
       Value: true
