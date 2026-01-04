@@ -13,9 +13,8 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {
-                    'cloud_topic': '/livox/lidar',
                     'scan_topic': '/scan',
-                    'target_frame': 'base_link',  # 修改：使用base_link作为目标坐标系
+                    'target_frame': 'base_link',
                     'min_height': 0.0,
                     'max_height': 2.0,
                     'angle_min': -3.14159,
@@ -25,7 +24,7 @@ def generate_launch_description():
                     'range_min': 0.4,
                     'range_max': 100.0,
                     'z_projection_min': -1.5,  # 新增：Z轴投影最小高度0.05
-                    'z_projection_max': 29.0,   # 新增：Z轴投影最大高度
+                    'z_projection_max': 1.2 ,   # 新增：Z轴投影最大高度
                     'outlier_mean_k': 0,      # 新增：离群点过滤参数
                     'outlier_stddev': 10.0      # 新增：离群点过滤参数
                 }

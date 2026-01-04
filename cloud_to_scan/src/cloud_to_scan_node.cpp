@@ -32,9 +32,9 @@ public:
     this->declare_parameter("z_projection_min", 9.9);  // 新增：Z轴投影的最小高度
     this->declare_parameter("z_projection_max", 10.0);  // 新增：Z轴投影的最大高度
 
-    // 创建订阅者和发布者 /livox/lidar  /unilidar/cloud
+    // 创建订阅者和发布者 /livox/lidar  /unilidar/cloud   /livox/points
     cloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-      "/livox/lidar", 10,
+      "/cur_scan_in_map", 10,
       std::bind(&PointCloudToLaserScan::cloudCallback, this, std::placeholders::_1));
     scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
   }
