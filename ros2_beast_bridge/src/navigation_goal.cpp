@@ -33,6 +33,12 @@ NavigationGoalHandler::NavigationGoalHandler(
         "/ultrasound_data", 10, std::bind(&NavigationGoalHandler::ultrasound_callback, this, std::placeholders::_1));
     init_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
     cmd_vel_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
+    load_map_client_ = node_->create_client<nav2_msgs::srv::LoadMap>("/map_server/load_map");
+    if (!load_map_client_->wait_for_service(std::chrono::seconds(5))) {
+        RCLCPP_WARN(node_->get_logger(), "未找到 /map_server/load_map 服务，接口调用时可能失败");
+    } else {
+        RCLCPP_INFO(node_->get_logger(), "已连接 /map_server/load_map 服务");
+    }
     RCLCPP_INFO(node_->get_logger(), "NavigationGoalHandler初始化完成");
 }
 
@@ -961,6 +967,101 @@ void NavigationGoalHandler::handle_robot_local_status(
         res.result(http::status::internal_server_error);
     }
 
+    boost::beast::ostream(res.body()) << response.dump(4);
+    res.prepare_payload();
+}
+
+
+void NavigationGoalHandler::handle_load_map(
+    const http::request<http::string_body>& req,
+    http::response<http::dynamic_body>& res
+) {
+    res.set(http::field::content_type, "application/json");
+    nlohmann::json response;
+
+    try {
+        // 1. 解析 POST 请求体中的 map_name 入参（原有逻辑不变）
+        nlohmann::json req_json = nlohmann::json::parse(req.body());
+        if (!req_json.contains("map_name") || !req_json["map_name"].is_string()) {
+            throw std::runtime_error("请求缺少有效字段 'map_name'（需为字符串类型）");
+        }
+        std::string map_name = req_json["map_name"].get<std::string>();
+        RCLCPP_INFO(node_->get_logger(), "收到地图加载请求，地图名称: %s", map_name.c_str());
+
+        // 2. 拼接完整地图路径（原有逻辑不变）
+        std::string map_url = "/home/test/robot_ws/src/buaacar_navigation2/maps/" + map_name;
+        RCLCPP_DEBUG(node_->get_logger(), "拼接后地图路径: %s", map_url.c_str());
+
+        // 3. 检查 ROS2 服务客户端是否就绪（原有逻辑不变）
+        if (!load_map_client_->service_is_ready()) {
+            throw std::runtime_error("地图加载服务未就绪，无法调用");
+        }
+
+        // 4. 构造 ROS2 服务请求（原有逻辑不变）
+        auto load_map_req = std::make_shared<nav2_msgs::srv::LoadMap::Request>();
+        load_map_req->map_url = map_url;
+
+        // 5. 异步发送服务请求（移除 spin_until_future_complete，改为手动轮询）
+        auto future = load_map_client_->async_send_request(load_map_req);
+        const auto timeout = std::chrono::seconds(10);
+        auto start_time = std::chrono::steady_clock::now();
+        bool timeout_flag = false;
+
+        // 手动轮询 Future 状态（等待服务响应，同时不重复添加 Executor）
+        while (future.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready) {
+            // 检查是否超时
+            if (std::chrono::steady_clock::now() - start_time > timeout) {
+                timeout_flag = true;
+                break;
+            }
+            // 检查节点是否正常运行（避免无限循环）
+            if (!rclcpp::ok()) {
+                throw std::runtime_error("节点运行异常，终止服务等待");
+            }
+        }
+
+        // 处理超时
+        if (timeout_flag) {
+            throw std::runtime_error("地图加载服务调用超时（10秒）");
+        }
+
+        // 6. 解析服务调用结果（原有逻辑不变，仅移除 spin 相关判断）
+        auto load_map_res = future.get();
+        if (load_map_res->result == 0) {  // 0 = 成功
+            // 服务调用成功
+            response["data"] = "地图加载成功";
+            response["errCode"] = 0;
+            response["msg"] = "加载地图 " + map_name + " 成功";
+            response["successed"] = true;
+            res.result(http::status::ok);
+            RCLCPP_INFO(node_->get_logger(), "地图 %s 加载成功", map_name.c_str());
+        } else {
+            // 服务调用失败（地图不存在等）
+            response["data"] = "地图加载失败";
+            response["errCode"] = 1;
+            response["msg"] = "加载地图 " + map_name + " 失败（服务返回错误状态）";
+            response["successed"] = false;
+            res.result(http::status::ok);
+            RCLCPP_WARN(node_->get_logger(), "地图 %s 加载失败", map_name.c_str());
+        }
+
+    } catch (const nlohmann::json::exception& e) {
+        // JSON 解析失败（原有逻辑不变）
+        response["data"] = nullptr;
+        response["errCode"] = 3;
+        response["msg"] = "请求格式错误: " + std::string(e.what());
+        response["successed"] = false;
+        res.result(http::status::bad_request);
+    } catch (const std::exception& e) {
+        // 其他业务异常（原有逻辑不变，现在不会再抛出 Executor 重复添加异常）
+        response["data"] = nullptr;
+        response["errCode"] = 5;
+        response["msg"] = "地图加载接口处理失败: " + std::string(e.what());
+        response["successed"] = false;
+        res.result(http::status::internal_server_error);
+    }
+
+    // 填充响应体（原有逻辑不变）
     boost::beast::ostream(res.body()) << response.dump(4);
     res.prepare_payload();
 }

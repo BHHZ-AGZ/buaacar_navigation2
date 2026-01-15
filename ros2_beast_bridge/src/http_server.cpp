@@ -865,6 +865,22 @@ void HttpServer::processRequest(
             }
             return;
         }
+        else if (req.method() == http::verb::post && req.target() == "/load_map") {
+            res.set(http::field::content_type, "application/json");
+            try {
+                nav_handler_->handle_load_map(req, res);
+            } catch (const std::exception& e) {
+                nlohmann::json response;
+                response["data"] = nullptr;
+                response["errCode"] = 5;
+                response["msg"] = "地图加载接口调用异常: " + std::string(e.what());
+                response["successed"] = false;
+                res.result(http::status::internal_server_error);
+                boost::beast::ostream(res.body()) << response.dump(4);
+                res.prepare_payload();
+            }
+            return;
+        }
         // 其他请求
         else {
             res.set(http::field::content_type, "application/json");

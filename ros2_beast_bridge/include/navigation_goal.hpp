@@ -22,6 +22,7 @@
 #include "rclcpp/subscription.hpp" 
 #include <mutex> 
 #include <boost/beast.hpp>
+#include <nav2_msgs/srv/load_map.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -105,6 +106,10 @@ public:
         const http::request<http::string_body>& req,
         http::response<http::dynamic_body>& res
     );
+    void handle_load_map(
+        const http::request<http::string_body>& req,
+        http::response<http::dynamic_body>& res
+    );
 private:
     // ROS节点指针
     rclcpp::Node::SharedPtr node_;
@@ -152,6 +157,8 @@ private:
     nav2_msgs::action::NavigateToPose::Goal paused_goal_;
     rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr init_pose_pub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;  // 新增
+
+    rclcpp::Client<nav2_msgs::srv::LoadMap>::SharedPtr load_map_client_;
 };
 
 #endif  // NAVIGATION_GOAL_HPP
